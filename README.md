@@ -1,8 +1,8 @@
 # 会议室预约系统
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://adoptium.net/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.16-brightgreen.svg)](https://spring.io/projects/spring-boot) [![MyBatis](https://img.shields.io/badge/MyBatis-3.0.5-red.svg)](https://mybatis.org/spring-boot-starter/) [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/) [![License](https://img.shields.io/badge/license-Unlicense-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://adoptium.net/) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.16-brightgreen.svg)](https://spring.io/projects/spring-boot) [![MyBatis](https://img.shields.io/badge/MyBatis-3.0.5-red.svg)](https://mybatis.org/spring-boot-starter/) [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 
-一个适合学习和面试展示的前后端分离项目。系统包含会议室查询、预约、审批、使用确认和后台统计等基本功能，后端采用 Spring Boot + MyBatis，前端采用 React + Ant Design。
+系统包含会议室查询、预约、审批、使用确认和后台统计等基本功能，后端采用 Spring Boot + MyBatis，前端采用 React + Ant Design。
 
 <img src="./resource/demo.gif" alt="系统演示" />
 
@@ -132,12 +132,3 @@ npm run build
 - [接口设计](./resource/interface_design.md)
 - [枚举值对照表](./resource/enumeration_table.md)
 - [数据库 ER 图](./resource/ER_diagram.png)
-
-## 安全说明
-
-- `sample_data.sql` 中的 `{noop}` 密码只用于本地演示；通过注册接口创建的新用户使用 BCrypt 加密。
-- 部署时必须设置独立的 `JWT_SECRET` 和数据库密码，不要将真实密钥提交到 GitHub。
-
-## License
-
-[The Unlicense](LICENSE) — 已放弃版权，任何人可自由使用。
