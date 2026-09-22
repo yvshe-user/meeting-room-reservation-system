@@ -1,0 +1,38 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: meeting-room-reservation-system
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/meeting_room_booking?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  type-handlers-package: com.meetingroom.typehandler
+  configuration:
+    map-underscore-to-camel-case: true
+
+file:
+  upload:
+    dir: ${UPLOAD_DIR:./uploads}
+    url-prefix: /upload
+
+jwt:
+  # 正式部署时务必通过环境变量覆盖，长度至少 32 字节。
+  secret: ${JWT_SECRET:dev-only-change-this-secret-key-32-bytes}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+logging:
+  level:
+    com.meetingroom: INFO

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meetingroom.mapper.ReservationMapper">
+    <resultMap id="ReservationResultMap" type="com.meetingroom.entity.Reservation">
+        <id property="reservationId" column="reservation_id"/>
+        <result property="reservationDate" column="reservation_date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="meetingTopic" column="meeting_topic"/>
+        <result property="attendance" column="attendance"/>
+        <result property="status" column="reservation_status"
+                typeHandler="com.meetingroom.typehandler.ReservationStatusTypeHandler"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="user" javaType="com.meetingroom.entity.User">
+            <id property="userId" column="u_user_id"/>
+            <result property="username" column="u_user_name"/>
+            <result property="password" column="u_password"/>
+            <result property="role" column="u_role"/>
+            <result property="phone" column="u_phone"/>
+        </association>
+        <association property="meetingRoom" javaType="com.meetingroom.entity.MeetingRoom">
+            <id property="roomId" column="m_room_id"/>
+            <result property="roomName" column="m_room_name"/>
+            <result property="roomNumber" column="m_room_number"/>
+            <result property="building" column="m_building"/>
+            <result property="capacity" column="m_capacity"/>
+            <result property="area" column="m_area"/>
+            <result property="description" column="m_description"/>
+            <result property="photoUrl" column="m_photo_url"/>
+            <result property="qrCodeUrl" column="m_qr_code_url"/>
+            <result property="isAvailable" column="m_is_available"/>
+        </association>
+    </resultMap>
+
+    <sql id="ReservationColumns">
+        r.reservation_id, r.reservation_date, r.start_time, r.end_time,
+        r.meeting_topic, r.attendance, r.reservation_status, r.created_at, r.updated_at,
+        u.user_id AS u_user_id, u.user_name AS u_user_name, u.password AS u_password,
+        u.role AS u_role, u.phone AS u_phone,
+        mr.room_id AS m_room_id, mr.room_name AS m_room_name, mr.room_number AS m_room_number,
+        mr.building AS m_building, mr.capacity AS m_capacity, mr.area AS m_area,
+        mr.description AS m_description, mr.photo_url AS m_photo_url,
+        mr.qr_code_url AS m_qr_code_url, mr.is_available AS m_is_available
+    </sql>
+
+    <sql id="ReservationJoins">
+        FROM reservation r
+        JOIN `user` u ON u.user_id = r.user_id
+        JOIN meeting_room mr ON mr.room_id = r.room_id
+    </sql>
+
+    <select id="findById" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        WHERE r.reservation_id = #{reservationId}
+    </select>
+
+    <select id="findWithDetailsById" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        WHERE r.reservation_id = #{reservationId}
+    </select>
+
+    <select id="findConflictingReservations" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        WHERE r.room_id = #{roomId}
+          AND r.reservation_status IN (0, 1)
+          AND r.reservation_date = #{date}
+          AND r.start_time &lt; #{endTime}
+          AND r.end_time &gt; #{startTime}
+        <if test="excludeReservationId != null">
+            AND r.reservation_id != #{excludeReservationId}
+        </if>
+    </select>
+
+    <select id="findByUserIdOrderByCreatedAtDesc" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        WHERE r.user_id = #{userId}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findAllWithDetails" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="findWeeklyReservationsWithDetails" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        WHERE r.reservation_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY mr.room_number, r.reservation_date, r.start_time
+    </select>
+
+    <select id="findByStatusOrderByCreatedAtDesc" resultMap="ReservationResultMap">
+        SELECT <include refid="ReservationColumns"/>
+        <include refid="ReservationJoins"/>
+        WHERE r.reservation_status = #{status,typeHandler=com.meetingroom.typehandler.ReservationStatusTypeHandler}
+        ORDER BY r.created_at DESC
+    </select>
+
+    <select id="countByMeetingRoomId" resultType="long">
+        SELECT COUNT(*) FROM reservation WHERE room_id = #{roomId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="reservationId" keyColumn="reservation_id">
+        INSERT INTO reservation
+        (user_id, room_id, reservation_date, start_time, end_time, meeting_topic, attendance, reservation_status)
+        VALUES
+        (#{user.userId}, #{meetingRoom.roomId}, #{reservationDate}, #{startTime}, #{endTime},
+         #{meetingTopic}, #{attendance},
+         #{status,typeHandler=com.meetingroom.typehandler.ReservationStatusTypeHandler})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE reservation
+        SET reservation_status = #{status,typeHandler=com.meetingroom.typehandler.ReservationStatusTypeHandler},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE reservation_id = #{reservationId}
+    </update>
+</mapper>

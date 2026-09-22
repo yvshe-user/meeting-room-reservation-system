@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meetingroom.mapper.MeetingRoomMapper">
+    <resultMap id="MeetingRoomResultMap" type="com.meetingroom.entity.MeetingRoom">
+        <id property="roomId" column="room_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="roomNumber" column="room_number"/>
+        <result property="building" column="building"/>
+        <result property="capacity" column="capacity"/>
+        <result property="area" column="area"/>
+        <result property="description" column="description"/>
+        <result property="photoUrl" column="photo_url"/>
+        <result property="qrCodeUrl" column="qr_code_url"/>
+        <result property="isAvailable" column="is_available"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="createdBy" javaType="com.meetingroom.entity.User">
+            <id property="userId" column="creator_id"/>
+            <result property="username" column="creator_name"/>
+        </association>
+    </resultMap>
+
+    <sql id="RoomColumns">
+        mr.room_id, mr.room_name, mr.room_number, mr.building, mr.capacity, mr.area,
+        mr.description, mr.photo_url, mr.qr_code_url, mr.is_available,
+        mr.created_at, mr.updated_at, u.user_id AS creator_id, u.user_name AS creator_name
+    </sql>
+
+    <select id="findAll" resultMap="MeetingRoomResultMap">
+        SELECT <include refid="RoomColumns"/>
+        FROM meeting_room mr
+        LEFT JOIN `user` u ON u.user_id = mr.created_by
+        ORDER BY mr.room_id
+    </select>
+
+    <select id="findAvailable" resultMap="MeetingRoomResultMap">
+        SELECT <include refid="RoomColumns"/>
+        FROM meeting_room mr
+        LEFT JOIN `user` u ON u.user_id = mr.created_by
+        WHERE mr.is_available = 1
+        ORDER BY mr.room_id
+    </select>
+
+    <select id="findById" resultMap="MeetingRoomResultMap">
+        SELECT <include refid="RoomColumns"/>
+        FROM meeting_room mr
+        LEFT JOIN `user` u ON u.user_id = mr.created_by
+        WHERE mr.room_id = #{roomId}
+    </select>
+
+    <select id="existsByRoomNumber" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM meeting_room WHERE room_number = #{roomNumber}
+    </select>
+
+    <select id="existsByRoomNumberAndRoomIdNot" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM meeting_room
+        WHERE room_number = #{roomNumber} AND room_id != #{roomId}
+    </select>
+
+    <select id="findAvailableByBuildingAndCapacity" resultMap="MeetingRoomResultMap">
+        SELECT <include refid="RoomColumns"/>
+        FROM meeting_room mr
+        LEFT JOIN `user` u ON u.user_id = mr.created_by
+        WHERE mr.building = #{building} AND mr.capacity >= #{capacity} AND mr.is_available = 1
+        ORDER BY mr.capacity, mr.room_id
+    </select>
+
+    <select id="findAvailableByCapacity" resultMap="MeetingRoomResultMap">
+        SELECT <include refid="RoomColumns"/>
+        FROM meeting_room mr
+        LEFT JOIN `user` u ON u.user_id = mr.created_by
+        WHERE mr.capacity >= #{capacity} AND mr.is_available = 1
+        ORDER BY mr.capacity, mr.room_id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="roomId" keyColumn="room_id">
+        INSERT INTO meeting_room
+        (room_name, room_number, building, capacity, area, description, photo_url, qr_code_url, is_available, created_by)
+        VALUES
+        (#{roomName}, #{roomNumber}, #{building}, #{capacity}, #{area}, #{description},
+         #{photoUrl}, #{qrCodeUrl}, #{isAvailable}, #{createdBy.userId})
+    </insert>
+
+    <update id="update">
+        UPDATE meeting_room
+        SET room_name = #{roomName}, room_number = #{roomNumber}, building = #{building},
+            capacity = #{capacity}, area = #{area}, description = #{description},
+            photo_url = #{photoUrl}, qr_code_url = #{qrCodeUrl}, is_available = #{isAvailable},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE room_id = #{roomId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM meeting_room WHERE room_id = #{roomId}
+    </delete>
+</mapper>

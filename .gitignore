@@ -1,0 +1,20 @@
+# Build output
+**/target/
+**/node_modules/
+**/dist/
+.m2-cache/
+.npm-cache/
+
+# Runtime files
+uploads/
+*.log
+.env
+.env.*
+!.env.example
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
